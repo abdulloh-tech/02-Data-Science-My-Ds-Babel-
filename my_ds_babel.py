@@ -1,47 +1,45 @@
-# Import neccesary libraries
 import sqlite3
-import pandas as pd
+import csv
+import pandas as pd 
 
-def sql_to_csv(database, table_name):
-    conn = sqlite3.connect(database)
+# def sql_to_csv(database, table_name):
+#   connection = sqlite3.connect(database)
+#   curs = connection.cursor()
+#   select = f"SELECT * FROM {table_name};"
+#   request = pd.read_sql_query(select, connection)
+#   request.to_csv("list_fault_lines.csv", index = False)
+#   with open("list_fault_lines.csv", "r") as file:
+#     all_results = file.read()
+#   return all_results[:-1]
+# print(sql_to_csv("all_fault_line.db", "fault_lines"))
 
-    # Write your SQL query
-    query = f"SELECT * FROM {table_name}"
+def csv_to_sql(csv_content, database, table_name):
+    for_description = []
+    csv_read = pd.read_csv(csv_content)
+    for_iloc = csv_read.iloc[:].values
+    connected = sqlite3.connect(database)
+    curs = connected.cursor()
+    curs.execute(f"CREATE TABLE {table_name} ('Volcano Name', 'Country', 'Type', 'Latitude (dd)', 'Longitude (dd)', 'Elevation (m)')")
+    curs.executemany("INSERT INTO volcanos VALUES (?, ?, ?, ?, ?, ?)", for_iloc)
+    connected.commit()
+    curs.execute(f"SELECT * FROM {table_name}")
+    for i in curs.description:
+        for_description.append(i)
+    return for_description
+    # connected = 
+# print(csv_to_sql("list_volcano.csv", "list_volcano.db", "volcanos"))
+    # return 
+# database = "all_fault_line.db"
+# connection = sqlite3.connect(database)
+# curs = connection.cursor()
+# select = "SELECT * FROM fault_lines;"
+# request = pd.read_sql_query(select, connection)
 
-    # Use pandas to read the SQL data into a DataFrame
-    df = pd.read_sql_query(query, conn)
+# print(select)
 
-    # Close the database connection
-    conn.close()
+# with open("list_fault_lines.csv", "r") as file:
+#     all_results = file.read()
+#     print(all_results)
 
-    # Save the DataFrame to a CSV file
-    # Replace 'output_file.csv' with your desired output file name
-    new_csv = df.to_csv(index=False)
-    return new_csv
-
-def csv_to_sql(csv_file_path, database_path, table_name):
-    # Read CSV content into a DataFrame
-    df = pd.read_csv(csv_file_path)
-
-    # Connect to the SQLite database
-    conn = sqlite3.connect(database_path)
-
-    # Write the DataFrame to the SQLite database
-    df.to_sql(table_name, conn, index=False, if_exists='replace')
-
-    # Commit the changes and close the database connection
-    conn.commit()
-    conn.close()
-
-
-
-# # Example usage:
-# csv_content_fault_lines = sql_to_csv('all_fault_line.db', 'fault_lines')
-# print(csv_content_fault_lines)
-
-
-csv_content_volcanos = open("list_volcano.csv").read()
-csv_to_sql(csv_content_volcanos, 'list_volcanos.db', 'volcanos')
-
-with open('list_volcano.csv', 'r') as csv_file:
-    csv_to_sql(csv_file, 'list_volcanos.db', 'volcanos')
+# a = pd.read_csv('list_fault_lines.csv')
+# print(a.isna())
